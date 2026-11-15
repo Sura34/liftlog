@@ -50,7 +50,8 @@ The public client configuration is loaded from committed `config.js` unless GitH
 - **Not encrypted at rest in the browser:** anyone with access to an unlocked device or developer tools may read the cache, so use a device screen lock. An incognito window does not retain offline history.
 - The app warns about unsynced data before sign-out. Export JSON periodically as a backup. Avoid recording the same session on two devices simultaneously because conflict resolution is not implemented yet.
 - Supabase free projects may pause after inactivity. Resume them from the dashboard; no paid upgrade should be necessary for normal personal use.
-- Anyone can see the public source, but only accounts authenticated to Supabase can access their own workout data. Disabling open signup is recommended for a personal-only app.
+- **Owner-only data access is now enforced by RLS:** personal workout data can be accessed only by the existing approved Supabase account (`suramiheret@gmail.com`, identified by its Supabase user UUID). The browser also rejects other email addresses and requests `shouldCreateUser: false` for magic-link login.
+- Other addresses may still create a Supabase Auth account if **Allow new users to sign up** remains enabled on the project's Auth settings. However, these accounts cannot read or write the owner's training data. To prevent new accounts entirely, disable that setting in the Supabase dashboard **after confirming the owner account works**.
 
 ## Tech and deployment
 
@@ -58,7 +59,8 @@ This edition is **vanilla JavaScript + CSS + HTML + IndexedDB + Supabase JS**. T
 
 ## Limitations and planned improvements
 
-- Exercise figures are stylized SVG illustrations, **not real exercise demonstration photos or anatomically accurate movement animations**. Use the provided "Watch demo" YouTube search links for form.
+- Exercise cards now show verified **start and finish photos** for all 19 exercise types, with an expanded movement guide and three form cues. These are two-position still demonstrations, not a continuous motion video. Some named variations have explanatory notes; use the provided "Watch demo" video-search links if unsure about technique.
+- Demonstration images are served from the public-domain [free-exercise-db](https://github.com/yuhonas/free-exercise-db) repository. Images are cached for subsequent offline viewing after they have been loaded. The app has no paid image services.
 - The 9-week cycle uses your first completed session as its approximate starting point and resets after the deload. For precise programming, configure a formal start date later.
 - Live deployment, email login and database access require completing the Supabase and GitHub Pages setup above.
 - Free tiers have quotas and availability limits. No paid service is configured.
