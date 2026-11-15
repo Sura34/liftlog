@@ -31,18 +31,16 @@ flowchart TD
 
 **Until these steps are complete, the deployed app shows a setup screen and does not accept personal workout data.**
 
-1. Create a project at https://supabase.com/dashboard on the **Free** plan. Select Stockholm or the closest EU region available. Do not enable paid upgrades.
-2. Open **SQL Editor** for that project. Copy and run the complete migration at [supabase/migrations/20261115000000_init.sql](supabase/migrations/20261115000000_init.sql). It creates the exercise catalog, workout/session/sets/measurements tables and enables owner-only row-level security for private data.
+1. **Completed:** The `liftlog` project already exists on the **Free** plan in Stockholm (`eu-north-1`), project ID `xdkpimpjsrikgeczoikd`. No paid upgrades are enabled.
+2. **Completed:** The migration at [supabase/migrations/20261115000000_init.sql](supabase/migrations/20261115000000_init.sql) was applied, including the exercise catalog and owner-only RLS. Supabase security advisors reported no issues at initial setup.
 3. In **Authentication > Providers > Email**, enable email sign-in via one-time code/magic link. Keep signup limited if this app is just for you. Consider turning off open signup and creating your own account through the dashboard if you do not want other people to register.
 4. In **Authentication > URL Configuration**, set **Site URL** to `https://sura34.github.io/liftlog/` and add `https://sura34.github.io/liftlog/` to the allowed redirect URLs.
-5. In Supabase **Project Settings > API**, copy **Project URL** and the **publishable key** (or the older `anon` key). **Never use a secret or service_role key in a browser app.**
-6. In [GitHub Actions secrets settings](https://github.com/Sura34/liftlog/settings/secrets/actions), add two repository secrets:
-    - `VITE_SUPABASE_URL`: the Supabase Project URL
-    - `VITE_SUPABASE_ANON_KEY`: the Supabase publishable or anon key
+5. **Completed:** The app uses the Supabase **publishable** key. **Never use a secret or service_role key in a browser app.**
+6. The free Supabase project is already created and its **public publishable key** and URL are committed in `config.js`. No GitHub Actions secrets are required for this public browser configuration. You may optionally override them with repository secrets `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Never add service-role or secret keys.
 7. In [GitHub Pages settings](https://github.com/Sura34/liftlog/settings/pages), choose **GitHub Actions** as the deployment source. Open [Actions](https://github.com/Sura34/liftlog/actions) and run **Deploy LiftLog**, or push any new commit to `main`.
 8. Visit https://sura34.github.io/liftlog/, enter your email and open the magic link sent by Supabase. On your Android browser, choose **Add to Home screen** or **Install app**.
 
-The public client configuration is generated during deployment in `config.js`. It does **not** contain a confidential key. Access protection comes from Supabase authentication and server-side RLS policies, not hiding the public anon/publishable key.
+The public client configuration is loaded from committed `config.js` unless GitHub repository secrets override it during deployment. It does **not** contain a confidential key. Access protection comes from Supabase authentication and server-side RLS policies, not hiding the public anon/publishable key.
 
 ## Privacy model
 
