@@ -8,29 +8,29 @@ const hasConfig=Boolean(CONFIG.url && CONFIG.anonKey);
 const sb=(hasConfig&&window.supabase?.createClient)
   ?window.supabase.createClient(CONFIG.url,CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
 const PROGRAM={
- A:{name:'Squat + push',focus:'Lower body strength and upper push',warmup:'5 min bike, then 2 light squat sets',finisher:'Rowing machine: 8 rounds of 30 sec hard / 30 sec easy',items:[
- ['squat','Barbell back squat','Quads',6,8,180,'','Brace your core|Keep your feet planted|Drive through midfoot'],
- ['db-bench','Dumbbell bench press','Chest',8,10,120,'','Retract shoulder blades|Keep wrists stacked|Lower with control'],
- ['cable-row','Seated cable row','Back',10,12,90,'','Keep torso stable|Pull elbows toward hips|Control the return'],
- ['rdl','Romanian deadlift','Hamstrings',8,10,120,'','Hinge at your hips|Keep weight close|Stop when hamstrings stretch'],
- ['lateral','Dumbbell lateral raise','Shoulders',12,15,0,'5a','Lead with elbows|Avoid swinging|Raise to shoulder height'],
- ['pushdown','Cable triceps pushdown','Triceps',10,15,60,'5b','Elbows at your sides|Extend fully|Return slowly']]},
- B:{name:'Pull + legs',focus:'Back, legs and shoulders',warmup:'5 min bike, then 1 light set of pulldown and leg press',finisher:'Bike: 8 rounds of 30 sec hard / 30 sec easy',items:[
- ['pulldown','Lat pulldown','Back',8,12,120,'','Keep chest lifted|Pull elbows down|Avoid excessive leaning'],
- ['leg-press','Leg press','Quads',10,12,120,'','Keep lower back on pad|Control depth|Avoid locking knees'],
- ['shoulder-press','Seated dumbbell shoulder press','Shoulders',8,10,120,'','Brace core|Press above shoulders|Lower under control'],
- ['lunges','Dumbbell walking lunges','Legs',10,10,90,'','Take controlled steps|Keep front foot flat|Count per leg'],
- ['curl','Dumbbell biceps curl','Biceps',10,12,0,'5a','Keep elbows still|Avoid momentum|Lower slowly'],
- ['face-pull','Cable face pull','Rear delts',12,15,60,'5b','Pull toward face|Keep elbows high|Squeeze shoulder blades'],
- ['knee-raise','Hanging knee raise','Core',10,15,60,'','Avoid swinging|Curl pelvis upward|Lower slowly']]},
- C:{name:'Hinge + arms',focus:'Posterior chain and arms',warmup:'5 min incline walk, then 2 light deadlift sets',finisher:'Incline treadmill: 8 min brisk walk',items:[
- ['deadlift','Trap bar deadlift','Full body',5,8,180,'','Brace before lifting|Push the floor away|Stand tall, do not lean back'],
- ['incline-press','Incline dumbbell press','Chest',8,12,120,'','Bench near 30 degrees|Neutral wrists|Control the lowering'],
- ['one-row','Single-arm dumbbell row','Back',10,10,90,'','Keep hips square|Pull elbow toward hip|Count per arm'],
- ['hip-thrust','Hip thrust','Glutes',8,12,90,'','Slight chin tuck|Drive through heels|Pause at top'],
- ['lateral','Dumbbell lateral raise','Shoulders',12,15,0,'5a','Lead with elbows|Avoid swinging|Raise to shoulder height'],
- ['overhead-triceps','Overhead triceps extension','Triceps',10,12,60,'5b','Upper arms steady|Lower behind head|Extend smoothly'],
- ['farmers','Farmer’s carry','Grip and core',30,40,60,'','Stand tall|Keep shoulders level|Walk in controlled steps','m']]}
+ A:{name:'Full body A · Squat + push',focus:'Chest, quads, back and hamstrings',warmup:'5 min easy cycling, then 2 lighter sets of squats. Ramp up the first bench set.',finisher:'Optional: 5–8 min easy cycling or walking, only if time allows.',items:[
+ ['squat','Barbell back squat','Quads',6,10,150,'','Brace your core|Keep your feet planted|Drive through midfoot',undefined,3],
+ ['db-bench','Dumbbell bench press','Chest',8,12,120,'','Retract shoulder blades|Keep wrists stacked|Lower with control',undefined,3],
+ ['cable-row','Seated cable row','Back',8,12,90,'','Keep torso stable|Pull elbows toward hips|Control the return',undefined,3],
+ ['rdl','Romanian deadlift','Hamstrings',8,10,120,'','Hinge at your hips|Keep weight close|Stop when hamstrings stretch',undefined,3],
+ ['lateral','Dumbbell lateral raise','Shoulders',12,20,0,'5a','Lead with elbows|Avoid swinging|Raise to shoulder height',undefined,2],
+ ['pushdown','Cable triceps pushdown','Triceps',10,15,60,'5b','Elbows at your sides|Extend fully|Return slowly',undefined,2]]},
+ B:{name:'Full body B · Pull + legs',focus:'Back, legs, chest and shoulders',warmup:'5 min easy cycling, then 1–2 lighter sets of pulldowns and leg press.',finisher:'Optional: 5–8 min comfortable cycling, only if time allows.',items:[
+ ['pulldown','Lat pulldown','Back',8,12,120,'','Keep chest lifted|Pull elbows down|Avoid excessive leaning',undefined,3],
+ ['leg-press','Leg press','Quads',10,15,120,'','Keep lower back on pad|Control depth|Avoid locking knees',undefined,3],
+ ['db-bench','Dumbbell bench press','Chest',8,12,90,'','Retract shoulder blades|Keep wrists stacked|Lower with control',undefined,2],
+ ['shoulder-press','Seated dumbbell shoulder press','Shoulders',8,12,90,'','Brace core|Press above shoulders|Lower under control',undefined,2],
+ ['leg-curl','Seated leg curl','Hamstrings',10,15,75,'','Keep your hips on the pad|Curl smoothly|Control the return',undefined,3],
+ ['curl','Dumbbell biceps curl','Biceps',10,15,0,'6a','Keep elbows still|Avoid momentum|Lower slowly',undefined,2],
+ ['face-pull','Cable face pull','Rear delts',12,20,60,'6b','Pull toward face|Keep elbows high|Squeeze shoulder blades',undefined,2]]},
+ C:{name:'Full body C · Hinge + upper body',focus:'Hips, chest, back and legs',warmup:'5 min incline walk, then 2 lighter trap-bar deadlift sets.',finisher:'Optional: 5–8 min easy incline walk, only if time allows.',items:[
+ ['deadlift','Trap bar deadlift','Full body',5,8,150,'','Brace before lifting|Push the floor away|Stand tall, do not lean back',undefined,2],
+ ['incline-press','Incline dumbbell press','Chest',8,12,120,'','Bench near 30 degrees|Neutral wrists|Control the lowering',undefined,3],
+ ['one-row','Single-arm dumbbell row','Back',8,12,90,'','Keep hips square|Pull elbow toward hip|Count per arm',undefined,3],
+ ['lunges','Dumbbell walking lunges','Quads and glutes',8,12,90,'','Take controlled steps|Keep front foot flat|Count per leg',undefined,2],
+ ['hip-thrust','Hip thrust','Glutes',8,12,90,'','Slight chin tuck|Drive through heels|Pause at top',undefined,2],
+ ['lateral','Dumbbell lateral raise','Shoulders',12,20,0,'6a','Lead with elbows|Avoid swinging|Raise to shoulder height',undefined,2],
+ ['overhead-triceps','Overhead triceps extension','Triceps',10,15,60,'6b','Upper arms steady|Lower behind head|Extend smoothly',undefined,2]]}
 };
 const workouts=Object.keys(PROGRAM);
 const uniqueExercises=[...new Map(Object.values(PROGRAM).flatMap(w=>w.items).map(e=>[e[0],e])).values()];
@@ -102,7 +102,7 @@ function loadDraft(){try{draft=JSON.parse(localStorage.getItem(draftKey())||'nul
 function saveDraft(){if(!uid)return;if(draft)localStorage.setItem(draftKey(),JSON.stringify(draft));else localStorage.removeItem(draftKey());}
 function ensureDraft(k){if(draft?.template===k)return;draft={id:genId(),template:k,startedAt:new Date().toISOString(),finishedAt:'',sets:[],finisherDone:false,notes:''};saveDraft();}
 function cycle(){const first=sessions.length?Math.min(...sessions.map(s=>new Date(s.finishedAt).getTime())):Date.now();const week=Math.floor((Date.now()-first)/(7*86400000));return ((week%9)+9)%9+1;}
-function setCount(e,i){const week=cycle();return week===9?Math.max(1,Math.ceil(3/2)):week>=5&&week<=8&&i<2?4:3;}
+function setCount(e,i){const base=e[9]||3;return cycle()===9?Math.max(1,Math.ceil(base/2)):base;}
 const EXERCISE_PHOTOS={
  "squat": "Barbell_Full_Squat",
  "db-bench": "Dumbbell_Bench_Press",
@@ -112,6 +112,7 @@ const EXERCISE_PHOTOS={
  "pushdown": "Triceps_Pushdown",
  "pulldown": "Wide-Grip_Lat_Pulldown",
  "leg-press": "Leg_Press",
+ "leg-curl": "Seated_Leg_Curl",
  "shoulder-press": "Seated_Dumbbell_Press",
  "lunges": "Dumbbell_Lunges",
  "curl": "Dumbbell_Bicep_Curl",
@@ -164,11 +165,11 @@ function shell(body){
 }
 function workout(k){
  const w=PROGRAM[k],active=draft?.template===k?draft:null,phase=cycle();
- let html='<div class="heading"><div><div class="eyebrow">WORKOUT '+k+' · '+esc(w.focus)+'</div><h2>'+w.name+'</h2></div><span class="chip">Week '+phase+'/9</span></div><p class="muted">'+esc(w.warmup)+'</p><div class="info"><span>◷ ~60–65 min</span><span>◈ '+(phase===9?'Deload week':'Progressive overload')+'</span><span>Tap any session anytime</span></div><div class="heading"><h3>Exercises</h3><span class="muted">'+w.items.length+' movements</span></div>';
+ let html='<div class="heading"><div><div class="eyebrow">WORKOUT '+k+' · '+esc(w.focus)+'</div><h2>'+w.name+'</h2></div><span class="chip">Week '+phase+'/9</span></div><p class="muted">'+esc(w.warmup)+'</p><div class="info"><span>◷ Aim: ~55–60 min</span><span>◈ '+(phase===9?'Deload week':'Progressive overload')+'</span><span>Tap any session anytime</span></div><div class="heading"><h3>Exercises</h3><span class="muted">'+w.items.length+' movements</span></div>';
  for(const [i,e] of w.items.entries()){
   const [id,name,muscle,min,max,rest,tag,cues,unit]=e;
   const n=setCount(e,i),last=lastSets(id),current=active?.sets.filter(s=>s.exerciseId===id)||[],complete=current.filter(s=>s.done).length;
-  html+='<article class="card"><div class="exercise-head"><div class="exercise-art">'+svgFigure(id)+'</div><div class="exercise-title"><div class="eyebrow">'+esc(tag||String(i+1).padStart(2,'0'))+' · '+esc(muscle)+'</div><h3>'+esc(name)+'</h3><div class="prescription">'+n+' sets × '+min+(min===max?'':'–'+max)+' '+(unit||'reps')+'</div></div><div class="count">'+complete+'/'+n+'</div></div><div class="exercise-meta"><span>◷ '+(rest?rest+'s rest':'Superset: next move')+'</span><a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query='+encodeURIComponent(name+' exercise correct form')+'">Watch demo ↗</a></div><details><summary>Form tips and progression</summary><ul>'+cues.split('|').map(c=>'<li>'+esc(c)+'</li>').join('')+'</ul><p class="recommend">'+progression(last,e,3)+'</p></details><div class="previous">'+(last.length?'LAST SESSION · '+last.map(s=>fmt(s.weight)+' kg × '+s.reps).join(' / '):'FIRST TIME · Establish your starting weight')+'</div><div class="setgrid column-label"><span>SET</span><span>KG</span><span>'+(unit||'REPS').toUpperCase()+'</span><span>DONE</span></div>';
+  html+='<article class="card"><div class="exercise-head"><div class="exercise-art">'+svgFigure(id)+'</div><div class="exercise-title"><div class="eyebrow">'+esc(tag||String(i+1).padStart(2,'0'))+' · '+esc(muscle)+'</div><h3>'+esc(name)+'</h3><div class="prescription">'+n+' sets × '+min+(min===max?'':'–'+max)+' '+(unit||'reps')+'</div></div><div class="count">'+complete+'/'+n+'</div></div><div class="exercise-meta"><span>◷ '+(rest?rest+'s rest':'Superset: next move')+'</span><a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query='+encodeURIComponent(name+' exercise correct form')+'">Watch demo ↗</a></div><details><summary>Form tips and progression</summary><ul>'+cues.split('|').map(c=>'<li>'+esc(c)+'</li>').join('')+'</ul><p class="recommend">'+progression(last,e,e[9]||3)+'</p></details><div class="previous">'+(last.length?'LAST SESSION · '+last.map(s=>fmt(s.weight)+' kg × '+s.reps).join(' / '):'FIRST TIME · Establish your starting weight')+'</div><div class="setgrid column-label"><span>SET</span><span>KG</span><span>'+(unit||'REPS').toUpperCase()+'</span><span>DONE</span></div>';
   for(let j=1;j<=n;j++){
    const set=current.find(s=>s.setNo===j),prev=last[j-1];
    html+='<div class="setgrid"><span class="setnum">'+j+'</span><input data-e="'+id+'" data-n="'+j+'" data-f="weight" type="number" inputmode="decimal" min="0" max="1000" step=".5" placeholder="'+(prev?.weight??'kg')+'" value="'+(set?.weight??'')+'" aria-label="'+esc(name)+' set '+j+' kilograms"><input data-e="'+id+'" data-n="'+j+'" data-f="reps" type="number" inputmode="numeric" min="0" max="1000" step="1" placeholder="'+(prev?.reps??min)+'" value="'+(set?.reps??'')+'" aria-label="'+esc(name)+' set '+j+' '+(unit||'repetitions')+'"><button class="done '+(set?.done?'checked':'')+'" data-done="'+id+':'+j+'" aria-label="Toggle set complete">'+(set?.done?'✓':'○')+'</button></div>';
