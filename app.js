@@ -1,5 +1,8 @@
 /* LiftLog: offline-first personal strength tracker. Public code, private user records. */
 const root=document.querySelector('#app');
+const OWNER_ID='f4af14df-4b07-4f51-aeae-1a07039ff938';
+const OWNER_EMAIL='suramiheret@gmail.com';
+
 const CONFIG=window.LIFTLOG_CONFIG||{};
 const hasConfig=Boolean(CONFIG.url && CONFIG.anonKey);
 const sb=(hasConfig&&window.supabase?.createClient)
@@ -100,6 +103,42 @@ function saveDraft(){if(!uid)return;if(draft)localStorage.setItem(draftKey(),JSO
 function ensureDraft(k){if(draft?.template===k)return;draft={id:genId(),template:k,startedAt:new Date().toISOString(),finishedAt:'',sets:[],finisherDone:false,notes:''};saveDraft();}
 function cycle(){const first=sessions.length?Math.min(...sessions.map(s=>new Date(s.finishedAt).getTime())):Date.now();const week=Math.floor((Date.now()-first)/(7*86400000));return ((week%9)+9)%9+1;}
 function setCount(e,i){const week=cycle();return week===9?Math.max(1,Math.ceil(3/2)):week>=5&&week<=8&&i<2?4:3;}
+const EXERCISE_PHOTOS={
+ "squat": "Barbell_Full_Squat",
+ "db-bench": "Dumbbell_Bench_Press",
+ "cable-row": "Seated_Cable_Rows",
+ "rdl": "Romanian_Deadlift",
+ "lateral": "Side_Lateral_Raise",
+ "pushdown": "Triceps_Pushdown",
+ "pulldown": "Wide-Grip_Lat_Pulldown",
+ "leg-press": "Leg_Press",
+ "shoulder-press": "Seated_Dumbbell_Press",
+ "lunges": "Dumbbell_Lunges",
+ "curl": "Dumbbell_Bicep_Curl",
+ "face-pull": "Face_Pull",
+ "knee-raise": "Hanging_Leg_Raise",
+ "deadlift": "Trap_Bar_Deadlift",
+ "incline-press": "Incline_Dumbbell_Press",
+ "one-row": "One-Arm_Dumbbell_Row",
+ "hip-thrust": "Barbell_Hip_Thrust",
+ "overhead-triceps": "Standing_Dumbbell_Triceps_Extension",
+ "farmers": "Farmers_Walk"
+}; 
+const PHOTO_BASE='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
+function exercisePhoto(id,position){const slug=EXERCISE_PHOTOS[id];return slug?PHOTO_BASE+encodeURIComponent(slug)+'/'+position+'.jpg':'';}
+function exercisePreview(id){
+ const first=exercisePhoto(id,0),last=exercisePhoto(id,1);if(!first)return '';
+ return '<button type="button" class="movement-preview" data-guide="'+esc(id)+'" aria-label="See how to perform this exercise"><span class="movement-frames"><span class="movement-frame"><img loading="lazy" src="'+first+'" alt="Exercise start position" onerror="this.closest(\'.movement-frame\').classList.add(\'no-photo\')"><span>01 · START</span></span><span class="movement-frame"><img loading="lazy" src="'+last+'" alt="Exercise finish position" onerror="this.closest(\'.movement-frame\').classList.add(\'no-photo\')"><span>02 · FINISH</span></span></span><span class="movement-cta">↗ Tap for full-size movement guide</span></button>';
+}
+function openGuide(id){
+ const e=uniqueExercises.find(x=>x[0]===id);if(!e)return;
+ const dialog=document.createElement('dialog');dialog.className='movement-dialog';
+ const [first,last]=[exercisePhoto(id,0),exercisePhoto(id,1)];
+ const variant=id==='knee-raise'?'The example may show straight-leg raises. Your workout uses bent knees.':id==='lunges'?'The example shows stationary lunges. For walking lunges, step forward between repetitions.':id==='farmers'?'The example demonstrates holding and walking with weights.':'';
+ dialog.innerHTML='<div class="guide-top"><div><div class="eyebrow">EXERCISE GUIDE</div><h2>'+esc(e[1])+'</h2></div><button class="icon-button" id="close-guide" aria-label="Close guide">✕</button></div><p class="muted">Compare the starting and finishing positions. Move slowly and with control.</p><div class="guide-images"><figure><img src="'+first+'" alt="'+esc(e[1])+' starting position"><figcaption>01 · START POSITION</figcaption></figure><figure><img src="'+last+'" alt="'+esc(e[1])+' finish position"><figcaption>02 · FINISH POSITION</figcaption></figure></div><div class="guide-tip"><strong>3 form cues</strong><ol>'+e[7].split('|').map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'+(variant?'<p>'+esc(variant)+'</p>':'')+'</div><a class="primary guide-video" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query='+encodeURIComponent(e[1]+' proper form tutorial')+'">Watch a video demonstration ↗</a><p class="footnote">Photos: free-exercise-db, public domain. Two positions, not a full video.</p>';
+ document.body.appendChild(dialog);dialog.querySelector('#close-guide').onclick=()=>dialog.close();dialog.addEventListener('close',()=>dialog.remove());dialog.showModal();
+}
+
 function svgFigure(id){
  const leg=/squat|leg-press|lunges|deadlift|rdl|hip-thrust|farmers/.test(id),pull=/row|pulldown|curl|face-pull/.test(id);
  return '<svg viewBox="0 0 100 100" aria-label="Stylized figure; use Watch demo for technique" role="img"><circle cx="50" cy="17" r="9" fill="none" stroke="currentColor" stroke-width="4"/><path d="M50 28V57 '+(leg?'L34 77 29 92 M50 57L67 77 72 92':pull?'L42 77 39 92 M50 57L60 77 63 92':'L39 77 38 92 M50 57L62 77 63 92')+'" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="'+(pull?'M50 35L29 47 23 30 M50 35L70 47 77 30':leg?'M50 35L29 49 24 63 M50 35L71 49 76 63':'M50 35L28 25 22 10 M50 35L72 25 78 10')+'" stroke="#a9ec70" stroke-width="5" stroke-linecap="round" fill="none"/></svg>';
@@ -114,7 +153,7 @@ function authPage(message=''){
  stopTimer();
  root.innerHTML='<div class="auth"><div class="logo">L</div><div class="eyebrow">PRIVATE TRAINING SPACE</div><h1>Lift<span class="accent">Log</span></h1><p class="muted auth-lead">Train smarter. Track every rep. Return stronger.</p><section class="auth-panel"><div class="eyebrow">'+(hasConfig?'SECURE ACCESS':'ONE-TIME SETUP')+'</div><h2>'+(hasConfig?'Welcome back.':'Almost ready.')+'</h2><p class="muted">'+(hasConfig?'Sign in with your email to unlock your private workout journal.':'Connect a free Supabase project in GitHub Actions secrets, then redeploy. The repository README explains how.')+'</p>'+(!hasConfig?'<a class="secondary setup-link" href="https://github.com/Sura34/liftlog#readme" target="_blank" rel="noopener">Open setup guide ↗</a>':'<form id="login"><label class="field">Email<input type="email" name="email" placeholder="you@example.com" autocomplete="email" required></label><button class="primary" type="submit">Send magic link →</button><p id="status" class="footnote" role="status"></p></form>')+(message?'<p class="notice">'+esc(message)+'</p>':'')+'</section><p class="footnote">Private history · Offline workout logs after sign in · No subscription</p></div>';
  const form=root.querySelector('#login');
- if(form)form.onsubmit=async e=>{e.preventDefault();const button=form.querySelector('button');const out=root.querySelector('#status');button.disabled=true;out.textContent='Sending sign-in link…';const r=await sb.auth.signInWithOtp({email:new FormData(form).get('email'),options:{emailRedirectTo:location.origin+location.pathname}});out.textContent=r.error?r.error.message:'Check your inbox for the sign-in link.';button.disabled=false;};
+ if(form)form.onsubmit=async e=>{e.preventDefault();const button=form.querySelector('button');const out=root.querySelector('#status');button.disabled=true;out.textContent='Sending sign-in link…';const requested=String(new FormData(form).get('email')||'').trim().toLowerCase();if(requested!==OWNER_EMAIL){out.textContent='This gym tracker is restricted to its owner.';button.disabled=false;return;}const r=await sb.auth.signInWithOtp({email:requested,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:false}});out.textContent=r.error?r.error.message:'Check your inbox for the sign-in link.';button.disabled=false;};
 }
 function shell(body){
  const start=new Date();start.setDate(start.getDate()-((start.getDay()+6)%7));start.setHours(0,0,0,0);
@@ -134,10 +173,11 @@ function workout(k){
    const set=current.find(s=>s.setNo===j),prev=last[j-1];
    html+='<div class="setgrid"><span class="setnum">'+j+'</span><input data-e="'+id+'" data-n="'+j+'" data-f="weight" type="number" inputmode="decimal" min="0" max="1000" step=".5" placeholder="'+(prev?.weight??'kg')+'" value="'+(set?.weight??'')+'" aria-label="'+esc(name)+' set '+j+' kilograms"><input data-e="'+id+'" data-n="'+j+'" data-f="reps" type="number" inputmode="numeric" min="0" max="1000" step="1" placeholder="'+(prev?.reps??min)+'" value="'+(set?.reps??'')+'" aria-label="'+esc(name)+' set '+j+' '+(unit||'repetitions')+'"><button class="done '+(set?.done?'checked':'')+'" data-done="'+id+':'+j+'" aria-label="Toggle set complete">'+(set?.done?'✓':'○')+'</button></div>';
   }
-  html+='</article>';
+  html+=exercisePreview(id);html+='</article>';
  }
  html+='<section class="card finisher"><div class="eyebrow">FINISHER</div><h3>One last push</h3><p class="muted">'+esc(w.finisher)+'</p><label class="field"><input id="finisher" type="checkbox" '+(active?.finisherDone?'checked':'')+'> Finisher completed</label></section><label class="field">SESSION NOTES<textarea id="notes" placeholder="How did today feel?">'+esc(active?.notes||'')+'</textarea></label><button class="primary" id="finish">Finish workout →</button><p class="footnote">Draft saves on this device as you train. Completed sessions sync when online.</p><details><summary>Training and recovery guidelines</summary><p>Stop 1–2 reps before failure. Lower for 2 seconds. When all sets reach the top of the rep range, add weight next time. Weeks 5–8 add a fourth set to the first two exercises. Week 9 deload.</p><p>Protein 1.6–2.2 g/kg daily. Small calorie deficit if losing weight. Regular walking, 7–9 hours of sleep, and recovery matter. Fat loss is overall, not localized.</p></details>';
  shell(html);
+ root.querySelectorAll('[data-guide]').forEach(b=>b.onclick=()=>openGuide(b.dataset.guide));
  root.querySelectorAll('input[data-f]').forEach(el=>el.oninput=()=>{
   ensureDraft(k);
   const id=el.dataset.e,num=Number(el.dataset.n),field=el.dataset.f;
@@ -241,6 +281,7 @@ async function boot(){
   if(nonce!==bootNonce)return;
   if(error||!data.session?.user){uid=null;authPage();return;}
   const user=data.session.user;
+  if(user.id!==OWNER_ID || user.email?.toLowerCase()!==OWNER_EMAIL){await sb.auth.signOut();uid=null;authPage('This is a personal training account. Other logins are not permitted.');return;}
   if(uid!==user.id){uid=user.id;email=user.email||'';sessions=[];metrics=[];draft=null;}
   await load();
   if(navigator.onLine){try{await sync();await pull();await load();}catch(e){console.warn('Cloud sync deferred',e);}}
