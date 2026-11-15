@@ -18,6 +18,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Verify application JavaScript
+        run: node --check app.js
+      - name: Inject public Supabase configuration
+        env:
+          URL: ${{ secrets.VITE_SUPABASE_URL }}
+          ANON: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          node -e 'const fs=require("fs");fs.writeFileSync("config.js","window.LIFTLOG_CONFIG="+JSON.stringify({url:process.env.URL||"",anonKey:process.env.ANON||""})+";\n")'
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
