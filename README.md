@@ -53,6 +53,24 @@ The public client configuration is loaded from committed `config.js` unless GitH
 - **Owner-only data access is now enforced by RLS:** personal workout data can be accessed only by the existing approved Supabase account (`suramiheret@gmail.com`, identified by its Supabase user UUID). The browser also rejects other email addresses and requests `shouldCreateUser: false` for magic-link login.
 - Other addresses may still create a Supabase Auth account if **Allow new users to sign up** remains enabled on the project's Auth settings. However, these accounts cannot read or write the owner's training data. To prevent new accounts entirely, disable that setting in the Supabase dashboard **after confirming the owner account works**.
 
+## Muscle-growth program (three flexible training days)
+
+The default A/B/C program is designed for consistent hypertrophy training with about 16–17 working sets per session. These are **working sets**, not warm-ups.
+
+| Day | Theme | Main exercises | Working sets |
+| --- | --- | --- | --- |
+| A | Squat and push | Back squat, dumbbell bench, seated row, RDL, lateral raise, triceps pushdown | 16 |
+| B | Pull and legs | Lat pulldown, leg press, dumbbell bench, shoulder press, seated leg curl, biceps curl, face pull | 17 |
+| C | Hinge and upper body | Trap-bar deadlift, incline press, one-arm row, walking lunges, hip thrust, lateral raise, overhead triceps extension | 16 |
+
+- Perform most working sets with about **1–2 repetitions in reserve**, controlling the weight and prioritizing correct form.
+- When every set of an exercise reaches the **top** of its rep range cleanly, increase the weight by the smallest available increment next time. Otherwise, aim to complete one more repetition.
+- Rest about **2–3 minutes for demanding compound lifts** and **60–90 seconds for accessories**; keep supersets to exercises marked a/b.
+- **Week 9 is a reduced-volume deload**. The app no longer automatically adds unnecessary sets during weeks 5–8.
+- Cardio finishers are now optional. A session may still exceed one hour depending on gym traffic, equipment and rest needs.
+- Recovery matters: eating sufficient protein, adequate energy intake, and sleeping 7–9 hours consistently are part of the program. In a substantial calorie deficit muscle gain can be slower; prioritize a modest deficit or maintenance calories if gaining muscle while losing fat.
+- This is a practical starting program, not a promise of a particular growth rate. Adjust volume based on recovery, progress and available time.
+
 ## Tech and deployment
 
 This edition is **vanilla JavaScript + CSS + HTML + IndexedDB + Supabase JS**. There is no npm build stage or server to pay for. GitHub Actions deploys the static site directly to GitHub Pages. The Supabase client SDK is delivered from a public CDN and cached for subsequent offline loads. The JS source can be checked with `node --check app.js`.
