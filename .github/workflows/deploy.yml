@@ -25,7 +25,7 @@ jobs:
           URL: ${{ secrets.VITE_SUPABASE_URL }}
           ANON: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
-          node -e 'const fs=require("fs");fs.writeFileSync("config.js","window.LIFTLOG_CONFIG="+JSON.stringify({url:process.env.URL||"",anonKey:process.env.ANON||""})+";\n")'
+          node -e 'const fs=require("fs");if(process.env.URL&&process.env.ANON){fs.writeFileSync("config.js","window.LIFTLOG_CONFIG="+JSON.stringify({url:process.env.URL,anonKey:process.env.ANON})+";\n")}else{console.log("Using committed public configuration")}'
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
