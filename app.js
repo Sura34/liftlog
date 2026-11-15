@@ -95,14 +95,14 @@ async function pull(){
  }
 }
 function lastSets(id){const match=sessions.find(s=>s.sets.some(x=>x.exerciseId===id&&x.done));return match?match.sets.filter(x=>x.exerciseId===id&&x.done).sort((a,b)=>a.setNo-b.setNo):[];}
-function progression(last,e,required){if(last.length<required)return 'Build your baseline';if(last.slice(0,required).every(s=>s.reps>=e[4]))return 'Ready to add weight next time';return 'Try to beat last time by one rep';}
+function progression(last,e,required){if(last.length<required)return 'Start with a manageable weight and keep 1–3 reps in reserve';if(last.slice(0,required).every(s=>s.reps>=e[4]))return 'All sets at the top of the range: increase the weight by the smallest available step';return 'Keep the weight and aim for one more clean rep next time';}
 const e1rm=s=>s.weight*(1+s.reps/30);
 const volume=sets=>sets.filter(s=>s.done).reduce((sum,s)=>sum+s.weight*s.reps,0);
 function loadDraft(){try{draft=JSON.parse(localStorage.getItem(draftKey())||'null');}catch{draft=null;}}
 function saveDraft(){if(!uid)return;if(draft)localStorage.setItem(draftKey(),JSON.stringify(draft));else localStorage.removeItem(draftKey());}
 function ensureDraft(k){if(draft?.template===k)return;draft={id:genId(),template:k,startedAt:new Date().toISOString(),finishedAt:'',sets:[],finisherDone:false,notes:''};saveDraft();}
-function cycle(){const first=sessions.length?Math.min(...sessions.map(s=>new Date(s.finishedAt).getTime())):Date.now();const week=Math.floor((Date.now()-first)/(7*86400000));return ((week%9)+9)%9+1;}
-function setCount(e,i){const base=e[9]||3;return cycle()===9?Math.max(1,Math.ceil(base/2)):base;}
+function cycle(){return null;} // Calendar weeks no longer determine training volume.
+function setCount(e,i){return e[9]||3;}
 const EXERCISE_PHOTOS={
  "squat": "Barbell_Full_Squat",
  "db-bench": "Dumbbell_Bench_Press",
@@ -164,8 +164,8 @@ function shell(body){
  root.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();});
 }
 function workout(k){
- const w=PROGRAM[k],active=draft?.template===k?draft:null,phase=cycle();
- let html='<div class="heading"><div><div class="eyebrow">WORKOUT '+k+' · '+esc(w.focus)+'</div><h2>'+w.name+'</h2></div><span class="chip">Week '+phase+'/9</span></div><p class="muted">'+esc(w.warmup)+'</p><div class="info"><span>◷ Aim: ~55–60 min</span><span>◈ '+(phase===9?'Deload week':'Progressive overload')+'</span><span>Tap any session anytime</span></div><div class="heading"><h3>Exercises</h3><span class="muted">'+w.items.length+' movements</span></div>';
+ const w=PROGRAM[k],active=draft?.template===k?draft:null;
+ let html='<div class="heading"><div><div class="eyebrow">WORKOUT '+k+' · '+esc(w.focus)+'</div><h2>'+w.name+'</h2></div><span class="chip">Build muscle</span></div><p class="muted">'+esc(w.warmup)+'</p><div class="info"><span>◷ Aim: ~55–60 min</span><span>◈ Progressive overload</span><span>Tap any session anytime</span></div><div class="heading"><h3>Exercises</h3><span class="muted">'+w.items.length+' movements</span></div>';
  for(const [i,e] of w.items.entries()){
   const [id,name,muscle,min,max,rest,tag,cues,unit]=e;
   const n=setCount(e,i),last=lastSets(id),current=active?.sets.filter(s=>s.exerciseId===id)||[],complete=current.filter(s=>s.done).length;
@@ -176,7 +176,7 @@ function workout(k){
   }
   html+=exercisePreview(id);html+='</article>';
  }
- html+='<section class="card finisher"><div class="eyebrow">FINISHER</div><h3>One last push</h3><p class="muted">'+esc(w.finisher)+'</p><label class="field"><input id="finisher" type="checkbox" '+(active?.finisherDone?'checked':'')+'> Finisher completed</label></section><label class="field">SESSION NOTES<textarea id="notes" placeholder="How did today feel?">'+esc(active?.notes||'')+'</textarea></label><button class="primary" id="finish">Finish workout →</button><p class="footnote">Draft saves on this device as you train. Completed sessions sync when online.</p><details><summary>Training and recovery guidelines</summary><p>Keep about 1–2 reps in reserve on most working sets. Lower the weight under control. When all sets hit the top of the rep range with good technique, increase the weight by the smallest available step next time. Otherwise, aim for one extra rep. Rest 2–3 minutes on demanding compounds, 60–90 seconds on smaller lifts. Week 9 is a lighter deload with fewer sets. Cardio finishers are optional, not required for muscle growth.</p><p>Protein 1.6–2.2 g/kg daily. For muscle gain, eat roughly maintenance calories or a small surplus; if prioritizing fat loss, use a modest deficit and expect slower gains. Regular walking, 7–9 hours of sleep, and recovery matter. Fat loss is overall, not localized.</p></details>';
+ html+='<section class="card finisher"><div class="eyebrow">FINISHER</div><h3>One last push</h3><p class="muted">'+esc(w.finisher)+'</p><label class="field"><input id="finisher" type="checkbox" '+(active?.finisherDone?'checked':'')+'> Finisher completed</label></section><label class="field">SESSION NOTES<textarea id="notes" placeholder="How did today feel?">'+esc(active?.notes||'')+'</textarea></label><button class="primary" id="finish">Finish workout →</button><p class="footnote">Draft saves on this device as you train. Completed sessions sync when online.</p><details><summary>Training and recovery guidelines</summary><p>Complete the prescribed sets with safe technique and around 1–3 reps in reserve. When all working sets hit the top of the rep range, increase the weight slightly next time. Otherwise keep the weight and improve a rep. Rest 2–3 minutes on challenging compounds, 60–90 seconds for accessories. Reduce sets for a lighter week if performance and recovery decline; there is no mandatory calendar-based deload.</p><p>For muscle growth, eat sufficient energy and aim for roughly 1.6–2.2 g protein/kg daily. At maintenance or a small surplus muscle gains may be faster; a fat-loss deficit can slow gains. Sleep 7–9 hours and leave at least a day between full-body sessions.</p></details>';
  shell(html);
  root.querySelectorAll('[data-guide]').forEach(b=>b.onclick=()=>openGuide(b.dataset.guide));
  root.querySelectorAll('input[data-f]').forEach(el=>el.oninput=()=>{
