@@ -1,47 +1,66 @@
 # LiftLog
 
-An offline-first, mobile-first workout tracker for Monday, Wednesday and Friday training. Built with strict TypeScript, Vite, Chart.js, IndexedDB, Supabase and GitHub Pages.
+**Train. Track. Progress.** A professional, mobile-first personal strength training PWA for any time of day.
+
+**Repository:** https://github.com/Sura34/liftlog
+
+**Intended website:** https://sura34.github.io/liftlog/
+
+## What it does
+
+- Choose workout A, B, or C whenever you want. Monday, Wednesday and Friday are convenient defaults, not enforced restrictions.
+- Record kilograms and repetitions or distance for each set, with previous performance shown as placeholders.
+- Progressive overload suggestions, rest timer, form cues and video-search links for every exercise.
+- Private workout history, estimated 1RM/volume/top-weight charts, bodyweight and waist tracking, weekly targets, CSV/JSON export and JSON import.
+- Installable PWA, draft autosave, account-scoped IndexedDB cache and queued writes while offline.
+- Responsive dark interface.
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-  A[Phone PWA] --> B[IndexedDB: sessions, metrics, pending writes]
-  B --> C[Sync when online and authenticated]
-  C --> D[Supabase Auth + Postgres with RLS]
-  E[GitHub Actions] --> F[GitHub Pages]
-  F --> A
+    A[Phone: LiftLog PWA] --> B[Private IndexedDB cache by user ID]
+    B --> C[Queued synchronization]
+    C --> D[Supabase Auth + PostgreSQL with Row Level Security]
+    E[Public GitHub repository] --> F[GitHub Actions]
+    F --> G[GitHub Pages]
+    G --> A
 ```
 
-## Local development
+## Set up free Supabase (required)
 
-1. Install Node.js 22 or newer.
-2. Run `npm install` then `npm run dev`.
-3. Without Supabase credentials, the app shows a setup screen and does not allow logging.
-4. Optional: copy `.env.example` to `.env.local` and fill in your Supabase project URL and publishable/anon key.
-5. Run `npm run typecheck`, `npm run lint`, `npm test` and `npm run build` before committing.
+**Until these steps are complete, the deployed app shows a setup screen and does not accept personal workout data.**
 
-## Cloud setup (required before recording workouts)
+1. Create a project at https://supabase.com/dashboard on the **Free** plan. Select Stockholm or the closest EU region available. Do not enable paid upgrades.
+2. Open **SQL Editor** for that project. Copy and run the complete migration at [supabase/migrations/20261115000000_init.sql](supabase/migrations/20261115000000_init.sql). It creates the exercise catalog, workout/session/sets/measurements tables and enables owner-only row-level security for private data.
+3. In **Authentication > Providers > Email**, enable email sign-in via one-time code/magic link. Keep signup limited if this app is just for you. Consider turning off open signup and creating your own account through the dashboard if you do not want other people to register.
+4. In **Authentication > URL Configuration**, set **Site URL** to `https://sura34.github.io/liftlog/` and add `https://sura34.github.io/liftlog/` to the allowed redirect URLs.
+5. In Supabase **Project Settings > API**, copy **Project URL** and the **publishable key** (or the older `anon` key). **Never use a secret or service_role key in a browser app.**
+6. In [GitHub Actions secrets settings](https://github.com/Sura34/liftlog/settings/secrets/actions), add two repository secrets:
+    - `VITE_SUPABASE_URL`: the Supabase Project URL
+    - `VITE_SUPABASE_ANON_KEY`: the Supabase publishable or anon key
+7. In [GitHub Pages settings](https://github.com/Sura34/liftlog/settings/pages), choose **GitHub Actions** as the deployment source. Open [Actions](https://github.com/Sura34/liftlog/actions) and run **Deploy LiftLog**, or push any new commit to `main`.
+8. Visit https://sura34.github.io/liftlog/, enter your email and open the magic link sent by Supabase. On your Android browser, choose **Add to Home screen** or **Install app**.
 
-1. Create a **free** Supabase project. Choose **Europe (Stockholm)** if available in the region selector. No paid plan is needed.
-2. In the Supabase SQL Editor, run `supabase/migrations/20261115000000_init.sql`. Alternatively, use the Supabase CLI migration workflow yourself.
-3. Under Authentication > Providers, enable Email magic links. Under Authentication > URL Configuration, set site URL to `https://YOUR_USERNAME.github.io/liftlog/` and add the same address to redirect URLs.
-4. The app lives in the public GitHub repository `Sura34/liftlog`. Code is public, workout records are not.
-5. In GitHub repository Settings > Secrets and variables > Actions, create `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from your Supabase project URL and publishable/anon key. These are client-visible by design. **Never use a Supabase service role or secret key in Vite variables.**
-6. In Settings > Pages, select **GitHub Actions** as the deployment source. Push to `main` or manually run Deploy Pages. Visit `https://YOUR_USERNAME.github.io/liftlog/`.
-7. Open the deployed app, enter your email and follow the magic link. Add the PWA to your phone home screen using your browser menu.
+The public client configuration is generated during deployment in `config.js`. It does **not** contain a confidential key. Access protection comes from Supabase authentication and server-side RLS policies, not hiding the public anon/publishable key.
 
-## Data and privacy
+## Privacy model
 
-- Sessions and body measurements are saved in IndexedDB before cloud sync. A pending queue retries writes on reconnection.
-- Every private Supabase table has user-scoped Row Level Security. Public exercise catalog tables are read-only to clients.
-- Login is required to access workout data. Local IndexedDB is separated by user ID and erased on sign-out. Offline writes are queued and synced after reconnecting. IndexedDB is not encrypted: use a device screen lock. Export JSON before clearing browser data.
-- Supabase free projects may pause after roughly one week of inactivity. Resume the project in the Supabase dashboard; local offline logging still works while paused.
-- GitHub Pages and Supabase have usage limits. Monitor them; do not enable paid upgrades without deciding to do so.
+- The GitHub repository contains only source code and a public exercise catalog. It does **not** contain your logged workouts.
+- All database tables storing personal workouts and measurements require authentication, with RLS enforcing `user_id = auth.uid()`. No account can query or modify another account's private rows through the client API.
+- Login is required to view or log personal data. Locally cached sessions are separated by Supabase user ID and erased when you sign out. Offline access depends on having a valid session already saved on that browser.
+- **Not encrypted at rest in the browser:** anyone with access to an unlocked device or developer tools may read the cache, so use a device screen lock. An incognito window does not retain offline history.
+- The app warns about unsynced data before sign-out. Export JSON periodically as a backup. Avoid recording the same session on two devices simultaneously because conflict resolution is not implemented yet.
+- Supabase free projects may pause after inactivity. Resume them from the dashboard; no paid upgrade should be necessary for normal personal use.
+- Anyone can see the public source, but only accounts authenticated to Supabase can access their own workout data. Disabling open signup is recommended for a personal-only app.
 
-## Current limitations
+## Tech and deployment
 
-- The figure on each exercise card is an animated stylized illustration, not a validated anatomical movement demonstration. Use Watch demo to see real form demonstrations.
-- This is an initial release. There is no conflict-resolution UI for simultaneous offline edits from multiple devices. Avoid logging the same session on two devices at once.
-- Week numbering currently uses a fixed cycle anchor date in `src/main.ts`; make it configurable for long-term use.
-- Supabase's catalog tables are seeded for future editing, while the client currently ships the same program in TypeScript for reliable offline access.
+This edition is **vanilla JavaScript + CSS + HTML + IndexedDB + Supabase JS**. There is no npm build stage or server to pay for. GitHub Actions deploys the static site directly to GitHub Pages. The Supabase client SDK is delivered from a public CDN and cached for subsequent offline loads. The JS source can be checked with `node --check app.js`.
+
+## Limitations and planned improvements
+
+- Exercise figures are stylized SVG illustrations, **not real exercise demonstration photos or anatomically accurate movement animations**. Use the provided "Watch demo" YouTube search links for form.
+- The 9-week cycle uses your first completed session as its approximate starting point and resets after the deload. For precise programming, configure a formal start date later.
+- Live deployment, email login and database access require completing the Supabase and GitHub Pages setup above.
+- Free tiers have quotas and availability limits. No paid service is configured.
